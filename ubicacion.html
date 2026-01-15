@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Ubicación de BeWash - Encuéntranos fácilmente">
+    <title>Ubicación - BeWash</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header y Navegación -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="container">
+                <div class="nav-wrapper">
+                    <div class="logo">
+                        <a href="index.html" style="text-decoration: none; color: inherit;">
+                            <h1>Be<span class="logo-accent">Wash</span></h1>
+                        </a>
+                    </div>
+                    <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <ul class="nav-menu" id="navMenu">
+                        <li><a href="index.html#inicio" class="nav-link">Inicio</a></li>
+                        <li><a href="index.html#servicios" class="nav-link">Servicios</a></li>
+                        <li><a href="galeria.html" class="nav-link">Galería</a></li>
+                        <li><a href="index.html#nosotros" class="nav-link">Nosotros</a></li>
+                        <li><a href="index.html#contacto" class="nav-link">Contacto</a></li>
+                        <li><a href="registro_usuario.html" class="nav-link btn-registro">Registro</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Ubicación Section -->
+    <section class="contacto" style="margin-top: 70px; padding-top: 5rem;">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Nuestra Ubicación</h2>
+                <p class="section-subtitle">Visítanos en nuestras instalaciones</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-top: 3rem;">
+                <!-- Información de Contacto -->
+                <div>
+                    <div class="servicio-card" style="text-align: left;">
+                        <h3 style="color: var(--primary-color); margin-bottom: 1.5rem; font-size: 1.8rem;">Información de Contacto</h3>
+                        
+                        <div class="info-item" style="margin-bottom: 2rem;">
+                            <div class="info-icon">📍</div>
+                            <div class="info-text">
+                                <h3>Dirección</h3>
+                                <p>Calle Principal #123<br>
+                                Barrio Centro<br>
+                                Ciudad, País</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item" style="margin-bottom: 2rem;">
+                            <div class="info-icon">📞</div>
+                            <div class="info-text">
+                                <h3>Teléfono</h3>
+                                <p>+57 300 123 4567<br>
+                                +57 1 234 5678</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item" style="margin-bottom: 2rem;">
+                            <div class="info-icon">✉️</div>
+                            <div class="info-text">
+                                <h3>Email</h3>
+                                <p>contacto@bewash.com<br>
+                                info@bewash.com</p>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon">🕒</div>
+                            <div class="info-text">
+                                <h3>Horarios de Atención</h3>
+                                <p><strong>Lunes - Sábado:</strong><br>
+                                8:00 AM - 6:00 PM<br><br>
+                                <strong>Domingo:</strong><br>
+                                9:00 AM - 2:00 PM</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mapa -->
+                <div>
+                    <div class="servicio-card" style="padding: 0; overflow: hidden;">
+                        <div style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); height: 500px; display: flex; align-items: center; justify-content: center; color: var(--white); flex-direction: column; gap: 1rem;">
+                            <div style="font-size: 4rem;">🗺️</div>
+                            <p style="font-size: 1.2rem; text-align: center; padding: 0 2rem;">Mapa interactivo<br><small style="opacity: 0.9;">(Integrar Google Maps aquí)</small></p>
+                            <a href="https://www.google.com/maps" target="_blank" class="btn btn-secondary" style="margin-top: 1rem;">Abrir en Google Maps</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instrucciones -->
+            <div style="margin-top: 3rem; max-width: 800px; margin-left: auto; margin-right: auto;">
+                <div class="servicio-card" style="text-align: left;">
+                    <h3 style="color: var(--primary-color); margin-bottom: 1rem;">¿Cómo Llegar?</h3>
+                    <div style="color: var(--text-light); line-height: 1.8;">
+                        <p style="margin-bottom: 1rem;"><strong>En Vehículo:</strong></p>
+                        <p style="margin-bottom: 1.5rem;">Nos encontramos en el corazón de la ciudad, con fácil acceso desde las principales vías. Contamos con amplio estacionamiento para nuestros clientes.</p>
+                        
+                        <p style="margin-bottom: 1rem;"><strong>En Transporte Público:</strong></p>
+                        <p style="margin-bottom: 1.5rem;">Puedes llegar en las rutas de buses 5, 12 y 23. La parada más cercana está a solo 2 cuadras de nuestras instalaciones.</p>
+                        
+                        <p style="margin-bottom: 1rem;"><strong>Estacionamiento:</strong></p>
+                        <p>Ofrecemos estacionamiento gratuito para todos nuestros clientes durante el tiempo que dure el servicio.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center" style="margin-top: 3rem;">
+                <a href="index.html" class="btn btn-primary">Volver al Inicio</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>BeWash</h3>
+                    <p>Servicio profesional de lavado de autos con productos de calidad y atención excepcional.</p>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook">📘</a>
+                        <a href="#" aria-label="Instagram">📷</a>
+                        <a href="#" aria-label="WhatsApp">💬</a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Enlaces Rápidos</h4>
+                    <ul>
+                        <li><a href="index.html#inicio">Inicio</a></li>
+                        <li><a href="index.html#servicios">Servicios</a></li>
+                        <li><a href="galeria.html">Galería</a></li>
+                        <li><a href="index.html#nosotros">Nosotros</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Servicios</h4>
+                    <ul>
+                        <li><a href="index.html#servicios">Lavado Básico</a></li>
+                        <li><a href="index.html#servicios">Lavado Premium</a></li>
+                        <li><a href="index.html#servicios">Lavado Detallado</a></li>
+                        <li><a href="insumos.html">Insumos</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contacto</h4>
+                    <ul>
+                        <li>📍 Calle Principal #123</li>
+                        <li>📞 +57 300 123 4567</li>
+                        <li>✉️ contacto@bewash.com</li>
+                        <li><a href="ubicacion.html">Ver Ubicación</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 BeWash. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

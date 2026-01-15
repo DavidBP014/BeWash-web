@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Registro de usuario en BeWash - Únete a nuestra comunidad">
+    <title>Registro de Usuario - BeWash</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header y Navegación -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="container">
+                <div class="nav-wrapper">
+                    <div class="logo">
+                        <a href="index.html" style="text-decoration: none; color: inherit;">
+                            <h1>Be<span class="logo-accent">Wash</span></h1>
+                        </a>
+                    </div>
+                    <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <ul class="nav-menu" id="navMenu">
+                        <li><a href="index.html#inicio" class="nav-link">Inicio</a></li>
+                        <li><a href="index.html#servicios" class="nav-link">Servicios</a></li>
+                        <li><a href="galeria.html" class="nav-link">Galería</a></li>
+                        <li><a href="index.html#nosotros" class="nav-link">Nosotros</a></li>
+                        <li><a href="index.html#contacto" class="nav-link">Contacto</a></li>
+                        <li><a href="registro_usuario.html" class="nav-link btn-registro active">Registro</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Registro Section -->
+    <section class="contacto" style="margin-top: 70px; padding-top: 5rem;">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Registro de Usuario</h2>
+                <p class="section-subtitle">Únete a nuestra comunidad y disfruta de beneficios exclusivos</p>
+            </div>
+
+            <div style="max-width: 600px; margin: 0 auto;">
+                <div class="contacto-form">
+                    <form id="registroForm">
+                        <div class="form-group">
+                            <label for="nombreCompleto" style="display: block; margin-bottom: 0.5rem; color: var(--dark-color); font-weight: 600;">Nombre Completo</label>
+                            <input type="text" id="nombreCompleto" name="nombreCompleto" placeholder="Ingresa tu nombre completo" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="emailRegistro" style="display: block; margin-bottom: 0.5rem; color: var(--dark-color); font-weight: 600;">Correo Electrónico</label>
+                            <input type="email" id="emailRegistro" name="emailRegistro" placeholder="tu@email.com" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="telefonoRegistro" style="display: block; margin-bottom: 0.5rem; color: var(--dark-color); font-weight: 600;">Teléfono</label>
+                            <input type="tel" id="telefonoRegistro" name="telefonoRegistro" placeholder="+57 300 123 4567" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="vehiculo" style="display: block; margin-bottom: 0.5rem; color: var(--dark-color); font-weight: 600;">Tipo de Vehículo</label>
+                            <select id="vehiculo" name="vehiculo" style="width: 100%; padding: 0.8rem; border: 2px solid #e0e0e0; border-radius: 8px; font-family: 'Poppins', sans-serif; font-size: 1rem; transition: var(--transition);" required>
+                                <option value="">Selecciona un tipo</option>
+                                <option value="sedan">Sedán</option>
+                                <option value="suv">SUV</option>
+                                <option value="camioneta">Camioneta</option>
+                                <option value="deportivo">Deportivo</option>
+                                <option value="motocicleta">Motocicleta</option>
+                                <option value="otro">Otro</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="placa" style="display: block; margin-bottom: 0.5rem; color: var(--dark-color); font-weight: 600;">Placa del Vehículo</label>
+                            <input type="text" id="placa" name="placa" placeholder="ABC123" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password" style="display: block; margin-bottom: 0.5rem; color: var(--dark-color); font-weight: 600;">Contraseña</label>
+                            <input type="password" id="password" name="password" placeholder="Mínimo 8 caracteres" required minlength="8">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirmPassword" style="display: block; margin-bottom: 0.5rem; color: var(--dark-color); font-weight: 600;">Confirmar Contraseña</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirma tu contraseña" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" id="terminos" name="terminos" required style="width: auto;">
+                                <span style="color: var(--text-light);">Acepto los <a href="#" style="color: var(--primary-color);">términos y condiciones</a> y la <a href="#" style="color: var(--primary-color);">política de privacidad</a></span>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">Registrarse</button>
+
+                        <div style="text-align: center; margin-top: 1.5rem; color: var(--text-light);">
+                            <p>¿Ya tienes una cuenta? <a href="#" style="color: var(--primary-color); font-weight: 600;">Inicia sesión aquí</a></p>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="text-center" style="margin-top: 2rem;">
+                    <a href="index.html" class="btn btn-secondary">Volver al Inicio</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>BeWash</h3>
+                    <p>Servicio profesional de lavado de autos con productos de calidad y atención excepcional.</p>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook">📘</a>
+                        <a href="#" aria-label="Instagram">📷</a>
+                        <a href="#" aria-label="WhatsApp">💬</a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Enlaces Rápidos</h4>
+                    <ul>
+                        <li><a href="index.html#inicio">Inicio</a></li>
+                        <li><a href="index.html#servicios">Servicios</a></li>
+                        <li><a href="galeria.html">Galería</a></li>
+                        <li><a href="index.html#nosotros">Nosotros</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Servicios</h4>
+                    <ul>
+                        <li><a href="index.html#servicios">Lavado Básico</a></li>
+                        <li><a href="index.html#servicios">Lavado Premium</a></li>
+                        <li><a href="index.html#servicios">Lavado Detallado</a></li>
+                        <li><a href="insumos.html">Insumos</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contacto</h4>
+                    <ul>
+                        <li>📍 Calle Principal #123</li>
+                        <li>📞 +57 300 123 4567</li>
+                        <li>✉️ contacto@bewash.com</li>
+                        <li><a href="ubicacion.html">Ver Ubicación</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 BeWash. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+        // Validación del formulario de registro
+        const registroForm = document.getElementById('registroForm');
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirmPassword');
+
+        if (registroForm) {
+            registroForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                // Validar que las contraseñas coincidan
+                if (password.value !== confirmPassword.value) {
+                    alert('Las contraseñas no coinciden. Por favor, verifica e intenta nuevamente.');
+                    return;
+                }
+
+                const formData = {
+                    nombreCompleto: document.getElementById('nombreCompleto').value,
+                    email: document.getElementById('emailRegistro').value,
+                    telefono: document.getElementById('telefonoRegistro').value,
+                    vehiculo: document.getElementById('vehiculo').value,
+                    placa: document.getElementById('placa').value
+                };
+
+                console.log('Registro enviado:', formData);
+                alert('¡Registro exitoso! Bienvenido a BeWash. Te hemos enviado un correo de confirmación.');
+                registroForm.reset();
+            });
+        }
+    </script>
+</body>
+</html>
