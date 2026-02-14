@@ -1,8 +1,10 @@
 /* Reset y Variables */
 :root {
-    --primary-color: #00C896;
-    --secondary-color: #006B5A;
-    --accent-color: #00E5B3;
+    --primary-color: #118282;
+    --secondary-color: #9B2FB9;
+    --accent-color: #1a9999;
+    --purple-primary: #9B2FB9;
+    --teal-primary: #118282;
     --dark-color: #1a1a1a;
     --light-color: #f8f9fa;
     --text-color: #333;
@@ -56,6 +58,18 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.logo-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
 }
 
 .logo h1 {
@@ -272,54 +286,267 @@ section {
     margin: 0 auto;
 }
 
-/* Servicios Section */
-.servicios {
+/* Instagram Section */
+.instagram-section {
     background: var(--light-color);
 }
 
-.servicios-grid {
+.instagram-franquicia-content {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: start;
 }
 
-.servicio-card {
+.instagram-content {
+    display: flex;
+    justify-content: center;
+}
+
+.instagram-card {
     background: var(--white);
-    padding: 2rem;
-    border-radius: 15px;
+    padding: 3rem;
+    border-radius: 20px;
     text-align: center;
+    max-width: 500px;
+    box-shadow: var(--shadow-lg);
     transition: var(--transition);
-    box-shadow: var(--shadow);
 }
 
-.servicio-card:hover {
-    transform: translateY(-10px);
+.instagram-card:hover {
+    transform: translateY(-5px);
+}
+
+.instagram-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.instagram-card h3 {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.instagram-card p {
+    color: var(--text-light);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.btn-instagram {
+    background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
+    color: var(--white);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition);
+    border: none;
+}
+
+.btn-instagram:hover {
+    transform: translateY(-3px);
     box-shadow: var(--shadow-lg);
 }
 
-.servicio-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
+.instagram-logo {
+    font-size: 1.2rem;
 }
 
-.servicio-card h3 {
-    font-size: 1.5rem;
-    color: var(--dark-color);
-    margin-bottom: 1rem;
+/* Mensualidad Section */
+.mensualidad {
+    background: var(--white);
+    padding: 5rem 0;
 }
 
-.servicio-card p {
-    color: var(--text-light);
-    margin-bottom: 1.5rem;
+.mensualidad-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: start;
 }
 
-.precio {
-    display: inline-block;
+.plan-card {
+    background: linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%);
+    border-radius: 25px;
+    padding: 0;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    position: relative;
+}
+
+.plan-header {
     background: var(--primary-color);
+    padding: 1rem;
+    text-align: center;
+    border-radius: 25px 25px 0 0;
+}
+
+.plan-header h3 {
     color: var(--white);
-    padding: 0.5rem 1.5rem;
-    border-radius: 20px;
+    font-size: 1.5rem;
     font-weight: 600;
+    margin: 0;
+}
+
+.plan-price {
+    text-align: center;
+    padding: 2rem 1rem 1rem;
+    color: var(--white);
+}
+
+.price-amount {
+    font-size: 3rem;
+    font-weight: 700;
+    display: block;
+}
+
+.price-period {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+.plan-features {
+    padding: 1rem 2rem;
+    color: var(--white);
+}
+
+.feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.4;
+}
+
+.feature-icon {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.btn-plan {
+    margin: 2rem;
+    background: var(--white);
+    color: #8B5CF6;
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 1rem 2rem;
+    border-radius: 25px;
+    text-decoration: none;
+    display: block;
+    text-align: center;
+    transition: var(--transition);
+}
+
+.btn-plan:hover {
+    background: var(--light-color);
+    transform: translateY(-2px);
+}
+
+/* Franquicia Card */
+.franquicia-card {
+    background: var(--white);
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: var(--shadow-lg);
+    border-left: 5px solid var(--secondary-color);
+}
+
+.franquicia-title {
+    color: var(--primary-color);
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.franquicia-subtitle {
+    color: var(--text-light);
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    font-style: italic;
+}
+
+.franquicia-features {
+    margin-bottom: 2rem;
+}
+
+.franquicia-features .feature {
+    color: var(--text-color);
+    margin-bottom: 0.8rem;
+    line-height: 1.5;
+}
+
+.franquicia-cta p {
+    color: var(--text-color);
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.franquicia-footer {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: var(--white);
+    padding: 1.5rem;
+    border-radius: 10px;
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
+.franquicia-footer p {
+    color: var(--white) !important;
+    margin-bottom: 0.5rem;
+}
+
+/* Puntos de Servicio Card */
+.puntos-servicio-card {
+    background: linear-gradient(135deg, var(--secondary-color) 0%, #7C3AED 100%);
+    border-radius: 25px;
+    padding: 2rem;
+    color: var(--white);
+    box-shadow: var(--shadow-lg);
+}
+
+.puntos-servicio-card h3 {
+    color: var(--white);
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.puntos-subtitle {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    font-weight: 600;
+}
+
+.puntos-list {
+    display: grid;
+    gap: 0.8rem;
+}
+
+.punto-item {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 0.8rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Nosotros Section */
@@ -609,8 +836,25 @@ section {
         grid-template-columns: 1fr;
     }
 
-    .servicios-grid {
+    .instagram-franquicia-content {
         grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .mensualidad-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .instagram-card,
+    .franquicia-card {
+        padding: 2rem;
+        margin: 0 1rem;
+    }
+
+    .plan-card,
+    .puntos-servicio-card {
+        margin: 0 1rem;
     }
 
     .galeria-grid {
@@ -637,8 +881,16 @@ section {
         font-size: 1.8rem;
     }
 
-    .servicio-card,
+    .instagram-card,
     .contacto-form {
         padding: 1.5rem;
+    }
+
+    .plan-card {
+        margin: 0 0.5rem;
+    }
+
+    .price-amount {
+        font-size: 2.5rem;
     }
 }
