@@ -1,15 +1,18 @@
-/* Reset y Variables */
+/* Reset y Variables - Paleta: #118282, blanco y gris */
 :root {
     --primary-color: #118282;
-    --secondary-color: #9B2FB9;
-    --accent-color: #1a9999;
-    --purple-primary: #9B2FB9;
-    --teal-primary: #118282;
-    --dark-color: #1a1a1a;
-    --light-color: #f8f9fa;
-    --text-color: #333;
-    --text-light: #666;
+    --primary-dark: #0d6b6b;
     --white: #ffffff;
+    --gray-100: #f5f5f5;
+    --gray-200: #e8e8e8;
+    --gray-400: #9a9a9a;
+    --gray-600: #666666;
+    --gray-800: #333333;
+    --gray-900: #1a1a1a;
+    --dark-color: var(--gray-900);
+    --light-color: var(--gray-100);
+    --text-color: var(--gray-800);
+    --text-light: var(--gray-600);
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.15);
     --transition: all 0.3s ease;
@@ -30,12 +33,15 @@ body {
     color: var(--text-color);
     line-height: 1.6;
     overflow-x: hidden;
+    min-width: 280px;
 }
 
 .container {
     max-width: 1200px;
+    width: 100%;
     margin: 0 auto;
     padding: 0 20px;
+    box-sizing: border-box;
 }
 
 /* Header y Navegación */
@@ -127,7 +133,7 @@ body {
 }
 
 .btn-registro:hover {
-    background: var(--secondary-color);
+    background: var(--primary-dark);
     transform: translateY(-2px);
 }
 
@@ -159,7 +165,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
     color: var(--white);
     margin-top: 70px;
     overflow: hidden;
@@ -182,19 +188,39 @@ body {
     z-index: 2;
     text-align: center;
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.hero-content .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
 }
 
 .hero-title {
-    font-size: 3.5rem;
-    font-weight: 700;
+    font-family: 'Great Vibes', cursive;
+    font-size: 4rem;
+    font-weight: 400;
     margin-bottom: 1rem;
+    letter-spacing: 0.02em;
     animation: fadeInUp 1s ease;
+    text-align: center;
+    width: 100%;
 }
 
 .hero-subtitle {
-    font-size: 1.3rem;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 300;
     margin-bottom: 2rem;
     opacity: 0.95;
+    letter-spacing: 0.02em;
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
     animation: fadeInUp 1s ease 0.2s both;
 }
 
@@ -202,8 +228,10 @@ body {
     display: flex;
     gap: 1rem;
     justify-content: center;
+    align-items: center;
     flex-wrap: wrap;
     animation: fadeInUp 1s ease 0.4s both;
+    width: 100%;
 }
 
 .wave-bottom {
@@ -212,7 +240,7 @@ body {
     left: 0;
     right: 0;
     height: 120px;
-    color: var(--light-color);
+    color: var(--gray-100);
 }
 
 .wave-bottom svg {
@@ -240,7 +268,7 @@ body {
 }
 
 .btn-primary:hover {
-    background: var(--light-color);
+    background: var(--gray-200);
     transform: translateY(-3px);
     box-shadow: var(--shadow-lg);
 }
@@ -270,6 +298,7 @@ section {
 .section-header {
     text-align: center;
     margin-bottom: 3rem;
+    width: 100%;
 }
 
 .section-title {
@@ -277,13 +306,18 @@ section {
     font-weight: 700;
     color: var(--dark-color);
     margin-bottom: 1rem;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .section-subtitle {
     font-size: 1.1rem;
     color: var(--text-light);
     max-width: 600px;
-    margin: 0 auto;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
 }
 
 /* Instagram Section */
@@ -296,6 +330,7 @@ section {
     grid-template-columns: 1fr 1fr;
     gap: 3rem;
     align-items: start;
+    justify-items: center;
 }
 
 .instagram-content {
@@ -309,6 +344,9 @@ section {
     border-radius: 20px;
     text-align: center;
     max-width: 500px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
     box-shadow: var(--shadow-lg);
     transition: var(--transition);
 }
@@ -318,8 +356,16 @@ section {
 }
 
 .instagram-icon {
-    font-size: 4rem;
     margin-bottom: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.instagram-icon .icon-instagram {
+    width: 64px;
+    height: 64px;
+    color: var(--primary-color);
 }
 
 .instagram-card h3 {
@@ -355,7 +401,14 @@ section {
 }
 
 .instagram-logo {
-    font-size: 1.2rem;
+    display: inline-flex;
+    align-items: center;
+}
+
+.instagram-logo .icon-instagram-sm {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: currentColor;
 }
 
 /* Mensualidad Section */
@@ -369,14 +422,17 @@ section {
     grid-template-columns: 1fr 1fr;
     gap: 3rem;
     align-items: start;
+    justify-items: center;
 }
 
 .plan-card {
-    background: linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
     border-radius: 25px;
     padding: 0;
     max-width: 400px;
     width: 100%;
+    margin-left: auto;
+    margin-right: auto;
     box-shadow: var(--shadow-lg);
     overflow: hidden;
     position: relative;
@@ -440,21 +496,22 @@ section {
 }
 
 .btn-plan {
-    margin: 2rem;
+    margin: 2rem auto;
     background: var(--white);
-    color: #8B5CF6;
+    color: var(--primary-color);
     font-weight: 700;
     font-size: 1.1rem;
     padding: 1rem 2rem;
     border-radius: 25px;
     text-decoration: none;
     display: block;
+    width: fit-content;
     text-align: center;
     transition: var(--transition);
 }
 
 .btn-plan:hover {
-    background: var(--light-color);
+    background: var(--gray-100);
     transform: translateY(-2px);
 }
 
@@ -464,14 +521,18 @@ section {
     padding: 2rem;
     border-radius: 20px;
     box-shadow: var(--shadow-lg);
-    border-left: 5px solid var(--secondary-color);
+    border-left: 5px solid var(--primary-color);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .franquicia-title {
     color: var(--primary-color);
-    font-size: 1.8rem;
+    font-size: 2.8rem;
     font-weight: 700;
     margin-bottom: 1rem;
+    letter-spacing: 0.05em;
 }
 
 .franquicia-subtitle {
@@ -498,7 +559,7 @@ section {
 }
 
 .franquicia-footer {
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
     color: var(--white);
     padding: 1.5rem;
     border-radius: 10px;
@@ -513,11 +574,15 @@ section {
 
 /* Puntos de Servicio Card */
 .puntos-servicio-card {
-    background: linear-gradient(135deg, var(--secondary-color) 0%, #7C3AED 100%);
+    background: linear-gradient(135deg, var(--gray-800) 0%, var(--gray-900) 100%);
     border-radius: 25px;
     padding: 2rem;
     color: var(--white);
     box-shadow: var(--shadow-lg);
+    max-width: 500px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .puntos-servicio-card h3 {
@@ -536,17 +601,50 @@ section {
 
 .puntos-list {
     display: grid;
-    gap: 0.8rem;
+    gap: 1rem;
 }
 
 .punto-item {
     background: rgba(255, 255, 255, 0.15);
-    padding: 0.8rem 1.2rem;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.95rem;
+    padding: 1rem 1.2rem;
+    border-radius: 10px;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.punto-nombre {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--white);
+}
+
+.punto-direccion {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 400;
+}
+
+.btn-punto-mapa {
+    display: inline-block;
+    margin-top: 0.25rem;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--white);
+    background: #118282;
+    border-radius: 20px;
+    text-decoration: none;
+    transition: var(--transition);
+    width: fit-content;
+}
+
+.btn-punto-mapa:hover {
+    background: var(--primary-dark);
+    color: var(--white);
+    transform: translateY(-1px);
 }
 
 /* Nosotros Section */
@@ -596,8 +694,16 @@ section {
     position: relative;
 }
 
+.nosotros-img {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    border-radius: 15px;
+    display: block;
+}
+
 .image-placeholder {
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
     border-radius: 15px;
     height: 400px;
     display: flex;
@@ -626,8 +732,20 @@ section {
     aspect-ratio: 4/3;
 }
 
+.galeria-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: var(--transition);
+}
+
+.galeria-item:hover .galeria-img {
+    transform: scale(1.05);
+}
+
 .galeria-placeholder {
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
     width: 100%;
     height: 100%;
     display: flex;
@@ -644,6 +762,10 @@ section {
 
 .text-center {
     text-align: center;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 /* Contacto Section */
@@ -687,6 +809,15 @@ section {
     background: var(--light-color);
     padding: 2rem;
     border-radius: 15px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.contacto-form .btn-block {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .form-group {
@@ -697,7 +828,7 @@ section {
 .form-group textarea {
     width: 100%;
     padding: 0.8rem;
-    border: 2px solid #e0e0e0;
+    border: 2px solid var(--gray-200);
     border-radius: 8px;
     font-family: 'Poppins', sans-serif;
     font-size: 1rem;
@@ -716,7 +847,7 @@ section {
 
 /* Footer */
 .footer {
-    background: var(--dark-color);
+    background: var(--gray-900);
     color: var(--white);
     padding: 3rem 0 1rem;
 }
@@ -849,12 +980,16 @@ section {
     .instagram-card,
     .franquicia-card {
         padding: 2rem;
-        margin: 0 1rem;
+        margin-left: auto;
+        margin-right: auto;
+        max-width: calc(100% - 2rem);
     }
 
     .plan-card,
     .puntos-servicio-card {
-        margin: 0 1rem;
+        margin-left: auto;
+        margin-right: auto;
+        max-width: calc(100% - 2rem);
     }
 
     .galeria-grid {
@@ -864,11 +999,18 @@ section {
     .hero-buttons {
         flex-direction: column;
         align-items: center;
+        justify-content: center;
     }
 
     .btn {
         width: 100%;
         max-width: 300px;
+        text-align: center;
+    }
+
+    .mensualidad-content,
+    .instagram-franquicia-content {
+        justify-items: center;
     }
 }
 
@@ -887,7 +1029,9 @@ section {
     }
 
     .plan-card {
-        margin: 0 0.5rem;
+        margin-left: auto;
+        margin-right: auto;
+        max-width: calc(100% - 1rem);
     }
 
     .price-amount {

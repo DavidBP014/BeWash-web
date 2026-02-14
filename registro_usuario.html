@@ -68,31 +68,23 @@
                         </div>
 
                         <div class="form-group">
+                            <label for="cedula" style="display: block; margin-bottom: 0.5rem; color: var(--dark-color); font-weight: 600;">Cédula</label>
+                            <input type="text" id="cedula" name="cedula" placeholder="Número de cédula" required>
+                        </div>
+
+                        <div class="form-group">
                             <label for="vehiculo" style="display: block; margin-bottom: 0.5rem; color: var(--dark-color); font-weight: 600;">Tipo de Vehículo</label>
                             <select id="vehiculo" name="vehiculo" style="width: 100%; padding: 0.8rem; border: 2px solid #e0e0e0; border-radius: 8px; font-family: 'Poppins', sans-serif; font-size: 1rem; transition: var(--transition);" required>
                                 <option value="">Selecciona un tipo</option>
-                                <option value="sedan">Sedán</option>
+                                <option value="moto">Moto</option>
                                 <option value="suv">SUV</option>
-                                <option value="camioneta">Camioneta</option>
-                                <option value="deportivo">Deportivo</option>
-                                <option value="motocicleta">Motocicleta</option>
-                                <option value="otro">Otro</option>
+                                <option value="carro">Carro</option>
                             </select>
                         </div>
 
                         <div class="form-group">
                             <label for="placa" style="display: block; margin-bottom: 0.5rem; color: var(--dark-color); font-weight: 600;">Placa del Vehículo</label>
                             <input type="text" id="placa" name="placa" placeholder="ABC123" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="password" style="display: block; margin-bottom: 0.5rem; color: var(--dark-color); font-weight: 600;">Contraseña</label>
-                            <input type="password" id="password" name="password" placeholder="Mínimo 8 caracteres" required minlength="8">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="confirmPassword" style="display: block; margin-bottom: 0.5rem; color: var(--dark-color); font-weight: 600;">Confirmar Contraseña</label>
-                            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirma tu contraseña" required>
                         </div>
 
                         <div class="form-group">
@@ -103,10 +95,6 @@
                         </div>
 
                         <button type="submit" class="btn btn-primary btn-block">Registrarse</button>
-
-                        <div style="text-align: center; margin-top: 1.5rem; color: var(--text-light);">
-                            <p>¿Ya tienes una cuenta? <a href="#" style="color: var(--primary-color); font-weight: 600;">Inicia sesión aquí</a></p>
-                        </div>
                     </form>
                 </div>
 
@@ -168,23 +156,16 @@
     <script>
         // Validación del formulario de registro
         const registroForm = document.getElementById('registroForm');
-        const password = document.getElementById('password');
-        const confirmPassword = document.getElementById('confirmPassword');
 
         if (registroForm) {
             registroForm.addEventListener('submit', (e) => {
                 e.preventDefault();
 
-                // Validar que las contraseñas coincidan
-                if (password.value !== confirmPassword.value) {
-                    alert('Las contraseñas no coinciden. Por favor, verifica e intenta nuevamente.');
-                    return;
-                }
-
                 const formData = {
                     nombreCompleto: document.getElementById('nombreCompleto').value,
                     email: document.getElementById('emailRegistro').value,
                     telefono: document.getElementById('telefonoRegistro').value,
+                    cedula: document.getElementById('cedula').value,
                     vehiculo: document.getElementById('vehiculo').value,
                     placa: document.getElementById('placa').value
                 };
