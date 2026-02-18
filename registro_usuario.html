@@ -154,25 +154,53 @@
 
     <script src="js/main.js"></script>
     <script>
-        // Validación del formulario de registro
         const registroForm = document.getElementById('registroForm');
 
         if (registroForm) {
-            registroForm.addEventListener('submit', (e) => {
+            registroForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
-                const formData = {
-                    nombreCompleto: document.getElementById('nombreCompleto').value,
-                    email: document.getElementById('emailRegistro').value,
-                    telefono: document.getElementById('telefonoRegistro').value,
-                    cedula: document.getElementById('cedula').value,
+                const btn = registroForm.querySelector('button[type="submit"]');
+                const terminosCheck = document.getElementById('terminos');
+                if (!terminosCheck.checked) {
+                    alert('Debes aceptar los términos y condiciones y la política de privacidad.');
+                    return;
+                }
+
+                const payload = {
+                    nombreCompleto: document.getElementById('nombreCompleto').value.trim(),
+                    email: document.getElementById('emailRegistro').value.trim(),
+                    telefono: document.getElementById('telefonoRegistro').value.trim(),
+                    cedula: document.getElementById('cedula').value.trim(),
                     vehiculo: document.getElementById('vehiculo').value,
-                    placa: document.getElementById('placa').value
+                    placa: document.getElementById('placa').value.trim(),
+                    terminos: true
                 };
 
-                console.log('Registro enviado:', formData);
-                alert('¡Registro exitoso! Bienvenido a BeWash. Te hemos enviado un correo de confirmación.');
-                registroForm.reset();
+                btn.disabled = true;
+                btn.textContent = 'Enviando...';
+
+                try {
+                    const res = await fetch('/api/registro', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json().catch(() => ({}));
+
+                    if (res.ok && data.ok) {
+                        alert('¡Registro exitoso! Serás redirigido a PSE para completar el pago de tu mensualidad.');
+                        registroForm.reset();
+                        window.location.href = 'https://www.psepagos.co/PSEHostingUI/ShowTicketOffice.aspx?ID=13291';
+                    } else {
+                        alert(data.error || 'Error al enviar. Verifica que el servidor esté corriendo (ver instrucciones) o intenta más tarde.');
+                    }
+                } catch (err) {
+                    alert('No se pudo conectar con el servidor. Asegúrate de abrir la página desde el servidor de BeWash (ver README en carpeta server).');
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'Registrarse';
+                }
             });
         }
     </script>
