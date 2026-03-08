@@ -37,6 +37,39 @@ function leerRegistros() {
   }
 }
 
+// Validaciones de seguridad (evitar datos falsos)
+const DOMINIOS_DESECHABLES = [
+  '10minutemail', 'guerrillamail', 'tempmail', 'mailinator', 'temp-mail',
+  'throwaway', 'fakeinbox', 'yopmail', 'maildrop', 'trashmail',
+  'sharklasers', 'guerrillamailblock', 'spamgourmet', 'tempinbox',
+  'getnada', 'dispostable', 'mohmal', 'emailondeck', 'tempail',
+  'inboxkitten', 'mytrashmail', 'mintemail', 'trashmail'
+];
+
+function validarDatos({ email, telefono, cedula, placa }) {
+  const e = String(email || '').trim().toLowerCase();
+  const regexEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!regexEmail.test(e)) return { ok: false, error: 'Correo electrónico inválido.' };
+  const dominio = e.split('@')[1] || '';
+  const esDesechable = DOMINIOS_DESECHABLES.some(d => dominio.includes(d));
+  if (esDesechable) return { ok: false, error: 'No se permiten correos temporales o desechables.' };
+  if (dominio.endsWith('.test') || dominio.endsWith('.local') || dominio.endsWith('.example')) {
+    return { ok: false, error: 'Dominio de correo no válido.' };
+  }
+
+  const tel = String(telefono || '').replace(/\D/g, '');
+  if (tel.length !== 10) return { ok: false, error: 'El teléfono debe tener 10 dígitos.' };
+  if (!/^3[0-9]{9}$/.test(tel)) return { ok: false, error: 'Teléfono móvil colombiano debe empezar por 3.' };
+
+  const cc = String(cedula || '').replace(/\D/g, '');
+  if (cc.length < 6 || cc.length > 10) return { ok: false, error: 'La cédula debe tener entre 6 y 10 dígitos.' };
+
+  const pl = String(placa || '').trim().toUpperCase().replace(/\s/g, '');
+  if (!/^[A-Z]{3}\d{3}[A-Z]?$/.test(pl)) return { ok: false, error: 'Placa inválida. Formato: ABC123 o ABC123D.' };
+
+  return { ok: true };
+}
+
 function guardarRegistro(registro) {
   const lista = leerRegistros();
   registro.id = Date.now();
@@ -99,13 +132,17 @@ app.post('/api/registro', async (req, res) => {
     if (!terminos) {
       return res.status(400).json({ ok: false, error: 'Debes aceptar términos y política de privacidad' });
     }
+    const validacion = validarDatos({ email, telefono, cedula, placa });
+    if (!validacion.ok) {
+      return res.status(400).json({ ok: false, error: validacion.error });
+    }
     const registro = {
       nombreCompleto: String(nombreCompleto).trim(),
-      email: String(email).trim(),
-      telefono: String(telefono).trim(),
-      cedula: String(cedula).trim(),
+      email: String(email).trim().toLowerCase(),
+      telefono: String(telefono).replace(/\D/g, ''),
+      cedula: String(cedula).replace(/\D/g, ''),
       vehiculo: String(vehiculo).trim(),
-      placa: String(placa).trim(),
+      placa: String(placa).trim().toUpperCase().replace(/\s/g, ''),
       terminos: true
     };
     guardarRegistro(registro);

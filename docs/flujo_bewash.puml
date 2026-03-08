@@ -1,0 +1,132 @@
+@startuml BeWash - Diagrama de Flujo de la Página Web
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam activityBackgroundColor #118282
+skinparam activityBorderColor #0d6b6b
+skinparam activityFontColor white
+skinparam arrowColor #333333
+skinparam noteBackgroundColor #f5f5f5
+
+title **BeWash - Flujo Completo de la Página Web**
+
+|Usuario|
+start
+:Ingresa a la página web;
+:URL: localhost:3001 o dominio;
+
+|Página Inicio (index.html)|
+:Se muestra **Página Principal**;
+:Header con logo y menú de navegación;
+
+if (¿Qué acción realiza?) then (Hero - Ver Mensualidad)
+  :Scroll a sección #mensualidad;
+  :Ve plan $80.000/mes + puntos de servicio;
+  if (¿Clic en Compra Ya?) then (Sí)
+    :Ir a **registro_usuario.html**;
+    detach
+  else (No)
+    :Permanece en index;
+  endif
+elseif (Hero - Contáctanos)
+  :Scroll a sección #contacto;
+  :Ve formulario de contacto;
+  if (¿Envía mensaje?) then (Sí)
+    :Formulario contacto (client-side);
+    :Mensaje mostrado;
+  endif
+elseif (Menú - Registro)
+  :Ir a **registro_usuario.html**;
+  detach
+elseif (Menú - Galería)
+  :Ir a **galeria.html**;
+  :Ver imágenes de trabajos;
+  :Botón "Volver al Inicio" → index.html;
+elseif (Menú - Nosotros)
+  :Scroll a sección #nosotros;
+  if (¿Clic en Conoce Más?) then (Sí)
+    :Ir a **misionvision.html**;
+  endif
+elseif (Menú - Contacto)
+  :Scroll a sección #contacto;
+elseif (Seguir en Instagram)
+  :Abrir **instagram.com/bewashsas** (nueva pestaña);
+elseif (Ver en el mapa - puntos de servicio)
+  :Abrir **Google Maps** con dirección (nueva pestaña);
+elseif (Ver Más Fotos)
+  :Ir a **galeria.html**;
+elseif (Footer - enlaces)
+  :Inicio / Galería / Insumos / Ubicación;
+endif
+
+|Registro (registro_usuario.html)|
+:Usuario llega al **formulario de registro**;
+note right
+  Campos: Nombre, Email, Teléfono,
+  Cédula, Tipo vehículo (Moto/SUV/Carro),
+  Placa, Aceptar términos
+end note
+
+:Completa todos los campos;
+:Marca "Acepto términos y política de privacidad";
+
+if (¿Términos marcados?) then (No)
+  :Mostrar alerta: "Debes aceptar...";
+  :Permanecer en formulario;
+  stop
+else (Sí)
+endif
+
+:Clic en **Registrarse**;
+:Botón muestra "Enviando...";
+
+|Backend (Node.js)|
+:POST /api/registro;
+:Validar campos obligatorios;
+
+if (¿Datos válidos?) then (No)
+  :Responder 400 + error;
+  |Usuario|
+  :Mostrar mensaje de error;
+  stop
+else (Sí)
+endif
+
+:Guardar en **data/registros.json**;
+:Enviar email a **Bewashsas1@gmail.com**;
+note right: Misma data que la DB
+
+if (¿Email enviado OK?) then (Sí)
+  :Log: "[EMAIL] Correo enviado correctamente";
+else (Error)
+  :Log: "[EMAIL] Error al enviar";
+  :Registro sí se guardó en DB;
+endif
+
+:Responder 200 + { ok: true };
+
+|Usuario|
+:Mostrar alerta: "¡Registro exitoso! Serás redirigido a PSE";
+:Redirección automática;
+
+:Ir a **PSE Pagos**;
+note right
+  https://www.psepagos.co/
+  PSEHostingUI/ShowTicketOffice.aspx?ID=13291
+end note
+
+:Usuario completa pago de mensualidad ($80.000);
+
+|Admin / Base de Datos|
+if (¿Admin accede a registros?) then (Sí)
+  :GET /api/admin/registros?key=ADMIN_KEY;
+  if (¿Clave correcta?) then (Sí)
+    :Devolver JSON con todos los registros;
+    :O ver archivo data/registros.json;
+  else (No)
+    :403 Acceso no autorizado;
+  endif
+endif
+
+stop
+
+@enduml

@@ -64,12 +64,12 @@
 
                         <div class="form-group">
                             <label for="telefonoRegistro" style="display: block; margin-bottom: 0.5rem; color: var(--dark-color); font-weight: 600;">Teléfono</label>
-                            <input type="tel" id="telefonoRegistro" name="telefonoRegistro" placeholder="+57 300 123 4567" required>
+                            <input type="tel" id="telefonoRegistro" name="telefonoRegistro" placeholder="300 123 4567 (10 dígitos)" required maxlength="14">
                         </div>
 
                         <div class="form-group">
                             <label for="cedula" style="display: block; margin-bottom: 0.5rem; color: var(--dark-color); font-weight: 600;">Cédula</label>
-                            <input type="text" id="cedula" name="cedula" placeholder="Número de cédula" required>
+                            <input type="text" id="cedula" name="cedula" placeholder="6 a 10 dígitos" required maxlength="12" inputmode="numeric">
                         </div>
 
                         <div class="form-group">
@@ -84,13 +84,13 @@
 
                         <div class="form-group">
                             <label for="placa" style="display: block; margin-bottom: 0.5rem; color: var(--dark-color); font-weight: 600;">Placa del Vehículo</label>
-                            <input type="text" id="placa" name="placa" placeholder="ABC123" required>
+                            <input type="text" id="placa" name="placa" placeholder="ABC123 o ABC123D" required maxlength="7" style="text-transform: uppercase;">
                         </div>
 
                         <div class="form-group">
                             <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
                                 <input type="checkbox" id="terminos" name="terminos" required style="width: auto;">
-                                <span style="color: var(--text-light);">Acepto los <a href="#" style="color: var(--primary-color);">términos y condiciones</a> y la <a href="#" style="color: var(--primary-color);">política de privacidad</a></span>
+                                <span style="color: var(--text-light);">Acepto los <a href="Politicas/terminos.html" target="_blank" style="color: var(--primary-color);">términos y condiciones</a></span>
                             </label>
                         </div>
 
@@ -156,24 +156,116 @@
     <script>
         const registroForm = document.getElementById('registroForm');
 
+        // === VALIDACIONES DE SEGURIDAD ===
+        const DOMINIOS_DESECHABLES = [
+            '10minutemail', 'guerrillamail', 'tempmail', 'mailinator', 'temp-mail',
+            'throwaway', 'fakeinbox', 'yopmail', 'maildrop', 'trashmail',
+            'sharklasers', 'guerrillamailblock', 'spamgourmet', 'tempinbox',
+            'getnada', 'dispostable', 'mohmal', 'emailondeck', 'tempail',
+            'inboxkitten', 'mytrashmail', 'mintemail', 'trashmail'
+        ];
+
+        function validarEmail(val) {
+            const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!regex.test(val)) return { ok: false, msg: 'Ingresa un correo electrónico válido.' };
+            const dominio = val.split('@')[1]?.toLowerCase() || '';
+            const esDesechable = DOMINIOS_DESECHABLES.some(d => dominio.includes(d));
+            if (esDesechable) return { ok: false, msg: 'No se permiten correos temporales o desechables. Usa un correo real.' };
+            if (dominio.endsWith('.test') || dominio.endsWith('.local') || dominio.endsWith('.example'))
+                return { ok: false, msg: 'Dominio de correo no válido.' };
+            return { ok: true };
+        }
+
+        function validarTelefono(val) {
+            const limpio = val.replace(/\D/g, '');
+            if (limpio.length !== 10) return { ok: false, msg: 'El teléfono debe tener 10 dígitos (ej: 3001234567).' };
+            if (!/^3[0-9]{9}$/.test(limpio)) return { ok: false, msg: 'Teléfono móvil colombiano debe empezar por 3 (ej: 300, 310, 320).' };
+            return { ok: true };
+        }
+
+        function validarCedula(val) {
+            const limpio = val.replace(/\D/g, '');
+            if (limpio.length < 6 || limpio.length > 10) return { ok: false, msg: 'La cédula debe tener entre 6 y 10 dígitos.' };
+            if (!/^\d+$/.test(limpio)) return { ok: false, msg: 'La cédula solo puede contener números.' };
+            return { ok: true };
+        }
+
+        function validarPlaca(val) {
+            const v = val.trim().toUpperCase().replace(/\s/g, '');
+            const antigua = /^[A-Z]{3}\d{3}$/;
+            const nueva = /^[A-Z]{3}\d{3}[A-Z]$/;
+            if (!antigua.test(v) && !nueva.test(v))
+                return { ok: false, msg: 'Placa inválida. Usa formato: ABC123 o ABC123D.' };
+            return { ok: true };
+        }
+
+        function mostrarError(inputId, msg) {
+            const input = document.getElementById(inputId);
+            const group = input?.closest('.form-group');
+            const old = group?.querySelector('.form-error');
+            if (old) old.remove();
+            if (group && msg) {
+                const err = document.createElement('span');
+                err.className = 'form-error';
+                err.style.cssText = 'display:block;color:#c0392b;font-size:0.85rem;margin-top:0.25rem;';
+                err.textContent = msg;
+                group.appendChild(err);
+            }
+        }
+
+        function quitarError(inputId) {
+            const group = document.getElementById(inputId)?.closest('.form-group');
+            group?.querySelector('.form-error')?.remove();
+        }
+
         if (registroForm) {
+            // Validación en tiempo real
+            ['emailRegistro', 'telefonoRegistro', 'cedula', 'placa'].forEach(id => {
+                document.getElementById(id)?.addEventListener('blur', function() {
+                    const val = this.value.trim();
+                    if (!val) { quitarError(id); return; }
+                    let r;
+                    if (id === 'emailRegistro') r = validarEmail(val);
+                    else if (id === 'telefonoRegistro') r = validarTelefono(val);
+                    else if (id === 'cedula') r = validarCedula(val);
+                    else if (id === 'placa') r = validarPlaca(val);
+                    if (r && !r.ok) mostrarError(id, r.msg); else quitarError(id);
+                });
+            });
+
             registroForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
                 const btn = registroForm.querySelector('button[type="submit"]');
                 const terminosCheck = document.getElementById('terminos');
                 if (!terminosCheck.checked) {
-                    alert('Debes aceptar los términos y condiciones y la política de privacidad.');
+                    alert('Debes aceptar los términos y condiciones.');
                     return;
                 }
 
+                const email = document.getElementById('emailRegistro').value.trim();
+                const telefono = document.getElementById('telefonoRegistro').value.trim();
+                const cedula = document.getElementById('cedula').value.trim();
+                const placa = document.getElementById('placa').value.trim();
+
+                const ve = validarEmail(email);
+                const vt = validarTelefono(telefono);
+                const vc = validarCedula(cedula);
+                const vp = validarPlaca(placa);
+
+                if (!ve.ok) { mostrarError('emailRegistro', ve.msg); return; }
+                if (!vt.ok) { mostrarError('telefonoRegistro', vt.msg); return; }
+                if (!vc.ok) { mostrarError('cedula', vc.msg); return; }
+                if (!vp.ok) { mostrarError('placa', vp.msg); return; }
+                ['emailRegistro','telefonoRegistro','cedula','placa'].forEach(quitarError);
+
                 const payload = {
                     nombreCompleto: document.getElementById('nombreCompleto').value.trim(),
-                    email: document.getElementById('emailRegistro').value.trim(),
-                    telefono: document.getElementById('telefonoRegistro').value.trim(),
-                    cedula: document.getElementById('cedula').value.trim(),
+                    email: email,
+                    telefono: telefono.replace(/\D/g, ''),
+                    cedula: cedula.replace(/\D/g, ''),
                     vehiculo: document.getElementById('vehiculo').value,
-                    placa: document.getElementById('placa').value.trim(),
+                    placa: placa.trim().toUpperCase().replace(/\s/g, ''),
                     terminos: true
                 };
 
