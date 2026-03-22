@@ -63,24 +63,42 @@ window.addEventListener('scroll', () => {
 const contactForm = document.getElementById('contactForm');
 
 if (contactForm) {
-    contactForm.addEventListener('submit', (e) => {
+    contactForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
-        const formData = {
-            nombre: document.getElementById('nombre').value,
-            email: document.getElementById('email').value,
-            telefono: document.getElementById('telefono').value,
-            mensaje: document.getElementById('mensaje').value
+
+        const btn = contactForm.querySelector('button[type="submit"]');
+        const payload = {
+            nombre: document.getElementById('nombre').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            telefono: document.getElementById('telefono').value.trim(),
+            mensaje: document.getElementById('mensaje').value.trim()
         };
 
-        // Aquí puedes agregar la lógica para enviar el formulario
-        console.log('Formulario enviado:', formData);
-        
-        // Mostrar mensaje de éxito
-        alert('¡Gracias por contactarnos! Nos pondremos en contacto contigo pronto.');
-        
-        // Limpiar formulario
-        contactForm.reset();
+        if (btn) {
+            btn.disabled = true;
+            const prev = btn.textContent;
+            btn.textContent = 'Enviando...';
+            try {
+                const res = await fetch('/api/contacto', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json().catch(() => ({}));
+
+                if (res.ok && data.ok) {
+                    alert(data.mensaje || '¡Gracias por contactarnos! Nos pondremos en contacto contigo pronto.');
+                    contactForm.reset();
+                } else {
+                    alert(data.error || 'No se pudo enviar el mensaje. Intenta más tarde o escríbenos por WhatsApp o Instagram.');
+                }
+            } catch (err) {
+                alert('No se pudo conectar con el servidor. Si estás en Vercel, revisa que el proyecto tenga las variables GMAIL_USER y GMAIL_APP_PASSWORD configuradas.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = prev;
+            }
+        }
     });
 }
 

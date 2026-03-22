@@ -281,7 +281,10 @@
                     const data = await res.json().catch(() => ({}));
 
                     if (res.ok && data.ok) {
-                        alert('¡Registro exitoso! Serás redirigido a PSE para completar el pago de tu mensualidad.');
+                        alert(
+                            (data.mensaje ? data.mensaje + '\n\n' : '') +
+                                'Serás redirigido a PSE para completar el pago de tu mensualidad.'
+                        );
                         registroForm.reset();
                         window.location.href = 'https://www.psepagos.co/PSEHostingUI/ShowTicketOffice.aspx?ID=13291';
                     } else {

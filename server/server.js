@@ -17,7 +17,7 @@ const DATA_DIR = process.env.VERCEL
 const REGISTROS_FILE = path.join(DATA_DIR, 'registros.json');
 
 // Solo aceptar JSON en el body; los datos viajan cifrados si usas HTTPS
-app.use(express.json({ limit: '10kb' }));
+app.use(express.json({ limit: '32kb' }));
 app.use(cors({ origin: true })); // En producción restringe a tu dominio
 
 // Servir la página web desde la carpeta anterior (dtf)
@@ -81,21 +81,53 @@ function guardarRegistro(registro) {
   fs.writeFileSync(REGISTROS_FILE, JSON.stringify(lista, null, 2), 'utf8');
 }
 
-// Correo corporativo: misma data que la DB llega aquí para comunicación con el cliente
-const EMAIL_CORPORATIVO = 'Bewashsas1@gmail.com';
+// Correo donde recibes registros y contactos (Gmail ignora mayúsculas; puedes sobreescribir con EMAIL_TO en Vercel)
+const EMAIL_CORPORATIVO = String(process.env.EMAIL_TO || 'bewashsas1@gmail.com')
+  .trim()
+  .toLowerCase();
 
-/** @returns {Promise<boolean>} true si se envió correo, false si no aplica o falló (el registro igual puede guardarse). */
-async function enviarEmail(datos) {
+function credencialesMailOk() {
   const user = process.env.GMAIL_USER;
   const pass = process.env.GMAIL_APP_PASSWORD;
-  if (!user || !pass) {
-    console.warn('[EMAIL] Falta GMAIL_USER o GMAIL_APP_PASSWORD - no se envía correo a', EMAIL_CORPORATIVO);
+  return { user, pass, ok: Boolean(user && pass) };
+}
+
+/**
+ * Envía correo a EMAIL_CORPORATIVO usando la cuenta Gmail configurada (GMAIL_USER / GMAIL_APP_PASSWORD).
+ * @param {{ subject: string, text: string, replyTo?: string }} opts
+ * @returns {Promise<boolean>}
+ */
+async function enviarCorreoCorporativo(opts) {
+  const { user, pass, ok } = credencialesMailOk();
+  if (!ok) {
+    console.warn('[EMAIL] Falta GMAIL_USER o GMAIL_APP_PASSWORD — no se envía a', EMAIL_CORPORATIVO);
     return false;
   }
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: { user, pass }
   });
+  const mail = {
+    from: user,
+    to: EMAIL_CORPORATIVO,
+    subject: opts.subject,
+    text: opts.text
+  };
+  if (opts.replyTo) {
+    mail.replyTo = opts.replyTo;
+  }
+  try {
+    await transporter.sendMail(mail);
+    console.log('[EMAIL] Enviado a', EMAIL_CORPORATIVO, '-', opts.subject);
+    return true;
+  } catch (err) {
+    console.error('[EMAIL] Error al enviar:', err.message);
+    return false;
+  }
+}
+
+/** Registro de mensualidad → mismo correo corporativo. */
+async function enviarEmailRegistro(datos) {
   const texto = `
 BeWash - Nuevo registro de mensualidad
 (Estos son los mismos datos guardados en la base de datos.)
@@ -110,21 +142,13 @@ Aceptó términos y política de privacidad: Sí
 Fecha y hora: ${datos.fecha}
 
 ---
-Responder desde Bewashsas1@gmail.com para gestionar la comunicación con el cliente.
+Puedes responder a este cliente usando "Responder" (Reply-To: ${datos.email}).
   `.trim();
-  try {
-    await transporter.sendMail({
-      from: user,
-      to: EMAIL_CORPORATIVO,
-      subject: `BeWash - Nuevo registro: ${datos.nombreCompleto}`,
-      text: texto
-    });
-    console.log('[EMAIL] Correo enviado correctamente a', EMAIL_CORPORATIVO, '- Asunto:', datos.nombreCompleto);
-    return true;
-  } catch (err) {
-    console.error('[EMAIL] Error al enviar:', err.message);
-    return false;
-  }
+  return enviarCorreoCorporativo({
+    subject: `BeWash - Nuevo registro: ${datos.nombreCompleto}`,
+    text: texto,
+    replyTo: datos.email
+  });
 }
 
 // POST /api/registro - Solo se usa desde tu página; datos en body (HTTPS recomendado)
@@ -151,16 +175,78 @@ app.post('/api/registro', async (req, res) => {
       terminos: true
     };
     guardarRegistro(registro);
-    const emailOk = await enviarEmail(registro);
+    const emailOk = await enviarEmailRegistro(registro);
     res.json({
       ok: true,
       mensaje: emailOk
         ? 'Registro guardado. Te contactaremos pronto.'
-        : 'Registro guardado. Te contactaremos pronto. (Notificación por correo no enviada: configura GMAIL_USER y GMAIL_APP_PASSWORD en Vercel.)'
+        : `Registro guardado. No se pudo enviar la notificación a ${EMAIL_CORPORATIVO}: en Vercel → Settings → Environment Variables añade GMAIL_USER y GMAIL_APP_PASSWORD (contraseña de aplicación de Google).`
     });
   } catch (err) {
     console.error(err);
     res.status(500).json({ ok: false, error: 'Error al procesar el registro' });
+  }
+});
+
+const REGEX_EMAIL_SIMPLE = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+// POST /api/contacto — formulario "Contáctanos" del sitio
+app.post('/api/contacto', async (req, res) => {
+  try {
+    const { nombre, email, telefono, mensaje } = req.body || {};
+    if (!nombre || !email || !telefono || !mensaje) {
+      return res.status(400).json({ ok: false, error: 'Faltan campos obligatorios.' });
+    }
+    const nombreLimpio = String(nombre).trim();
+    const e = String(email).trim().toLowerCase();
+    if (!REGEX_EMAIL_SIMPLE.test(e)) {
+      return res.status(400).json({ ok: false, error: 'Correo electrónico inválido.' });
+    }
+    const dominio = e.split('@')[1] || '';
+    const esDesechable = DOMINIOS_DESECHABLES.some(d => dominio.includes(d));
+    if (esDesechable) {
+      return res.status(400).json({ ok: false, error: 'No se permiten correos temporales o desechables.' });
+    }
+    const tel = String(telefono).replace(/\D/g, '');
+    if (tel.length < 7 || tel.length > 15) {
+      return res.status(400).json({ ok: false, error: 'Teléfono no válido.' });
+    }
+    const msg = String(mensaje).trim();
+    if (msg.length < 5) {
+      return res.status(400).json({ ok: false, error: 'Escribe un mensaje un poco más largo.' });
+    }
+    if (msg.length > 4000) {
+      return res.status(400).json({ ok: false, error: 'Mensaje demasiado largo.' });
+    }
+
+    const texto = `
+BeWash - Mensaje desde el formulario de contacto (sitio web)
+
+Nombre: ${nombreLimpio}
+Correo: ${e}
+Teléfono: ${tel}
+
+Mensaje:
+${msg}
+`.trim();
+
+    const enviado = await enviarCorreoCorporativo({
+      subject: `BeWash - Contacto web: ${nombreLimpio.slice(0, 80)}`,
+      text: texto,
+      replyTo: e
+    });
+
+    if (!enviado) {
+      return res.status(503).json({
+        ok: false,
+        error:
+          'No se pudo enviar el mensaje: falta configurar el correo en el servidor. En Vercel añade GMAIL_USER y GMAIL_APP_PASSWORD (cuenta Gmail con contraseña de aplicación).'
+      });
+    }
+    res.json({ ok: true, mensaje: 'Mensaje enviado. Te responderemos pronto.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ ok: false, error: 'Error al enviar el mensaje. Intenta más tarde.' });
   }
 });
 
