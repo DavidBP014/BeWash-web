@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="bewash-api-origin" content="">
+  <title>Recuperar contraseña — BeWash Admin</title>
+  <link rel="icon" type="image/png" href="../img/8d83c64278d14db996379e6a57c34ba107aacdc5 (1).png">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="admin-page">
+    <div class="admin-header-bar">
+      <a href="../index.html" class="logo-mini">
+        <img src="../img/8d83c64278d14db996379e6a57c34ba107aacdc5 (1).png" alt="BeWash">
+        <span><strong>Be</strong><span style="color:var(--primary-color)">Wash</span> · Admin</span>
+      </a>
+      <a href="login.html" class="admin-link">Volver al login</a>
+    </div>
+
+    <div class="admin-card" id="stepSolicitar">
+      <h2>Restablecer contraseña</h2>
+      <p class="admin-sub">Te enviaremos un enlace al correo autorizado del administrador.</p>
+      <div id="msgSolicitar" class="admin-msg" role="alert"></div>
+      <form id="formSolicitar">
+        <div class="form-group">
+          <label for="email">Correo electrónico</label>
+          <input type="email" id="email" name="email" autocomplete="username" required placeholder="tu@correo.com">
+        </div>
+        <div class="admin-actions">
+          <button type="submit" class="admin-btn admin-btn-primary" id="btnSolicitar">Enviar enlace</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="admin-card" id="stepNueva" style="display:none;">
+      <h2>Nueva contraseña</h2>
+      <p class="admin-sub">Elige una contraseña de al menos 8 caracteres.</p>
+      <div id="msgNueva" class="admin-msg" role="alert"></div>
+      <form id="formNueva">
+        <div class="form-group">
+          <label for="newPassword">Nueva contraseña</label>
+          <input type="password" id="newPassword" name="newPassword" autocomplete="new-password" required minlength="8" placeholder="Mínimo 8 caracteres">
+        </div>
+        <div class="form-group">
+          <label for="newPassword2">Confirmar contraseña</label>
+          <input type="password" id="newPassword2" name="newPassword2" autocomplete="new-password" required minlength="8" placeholder="Repite la contraseña">
+        </div>
+        <div class="admin-actions">
+          <button type="submit" class="admin-btn admin-btn-primary" id="btnGuardar">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script src="../js/bewash-api.js"></script>
+  <script>
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const tokenFromUrl = params.get('token');
+
+      const stepSolicitar = document.getElementById('stepSolicitar');
+      const stepNueva = document.getElementById('stepNueva');
+      const msgSolicitar = document.getElementById('msgSolicitar');
+      const msgNueva = document.getElementById('msgNueva');
+      let resetToken = tokenFromUrl || '';
+
+      if (resetToken) {
+        stepSolicitar.style.display = 'none';
+        stepNueva.style.display = 'block';
+      }
+
+      function show(el, text, ok) {
+        el.textContent = text || '';
+        el.className = 'admin-msg ' + (ok ? 'ok' : 'error');
+        el.style.display = text ? 'block' : 'none';
+      }
+
+      document.getElementById('formSolicitar').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        show(msgSolicitar, '');
+        const btn = document.getElementById('btnSolicitar');
+        btn.disabled = true;
+        try {
+          const res = await fetch(
+            typeof window.bewashApiUrl === 'function'
+              ? window.bewashApiUrl('/api/admin/solicitar-recuperacion')
+              : '/api/admin/solicitar-recuperacion',
+            {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: document.getElementById('email').value.trim() })
+          });
+          const raw = await res.text();
+          let data = {};
+          try {
+            data = raw ? JSON.parse(raw) : {};
+          } catch (parseErr) {
+            data = {};
+          }
+          if (res.ok && data.ok) {
+            show(msgSolicitar, data.mensaje || 'Revisa tu correo.', true);
+            return;
+          }
+          let detalle = data.error;
+          if (!detalle) {
+            if (!res.ok && (raw || '').indexOf('<!DOCTYPE') !== -1) {
+              detalle =
+                'El servidor devolvió HTML en lugar de la API (código ' +
+                res.status +
+                '). Opciones: (1) Apunta el dominio bewash.net al mismo proyecto en Vercel donde está la carpeta /api. (2) O, en cada HTML, en la etiqueta <meta name="bewash-api-origin"> pon la URL base de tu backend (ej. https://tu-app.vercel.app) sin barra final, igual en index y en admin/*.html, sube los archivos y vuelve a intentar.';
+            } else {
+              detalle =
+                'Respuesta del servidor: HTTP ' +
+                res.status +
+                (raw && raw.length < 200 ? ' — ' + raw : '') +
+                '. Comprueba variables de entorno y despliegue.';
+            }
+          }
+          show(msgSolicitar, detalle, false);
+        } catch (err) {
+          show(msgSolicitar, 'No hay conexión con el servidor.', false);
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+      document.getElementById('formNueva').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        show(msgNueva, '');
+        const p1 = document.getElementById('newPassword').value;
+        const p2 = document.getElementById('newPassword2').value;
+        if (p1 !== p2) {
+          show(msgNueva, 'Las contraseñas no coinciden.', false);
+          return;
+        }
+        if (!resetToken) {
+          show(msgNueva, 'Enlace inválido. Solicita un nuevo correo desde «Olvidé mi contraseña».', false);
+          return;
+        }
+        const btn = document.getElementById('btnGuardar');
+        btn.disabled = true;
+        try {
+          const res = await fetch(
+            typeof window.bewashApiUrl === 'function'
+              ? window.bewashApiUrl('/api/admin/restablecer-contrasena')
+              : '/api/admin/restablecer-contrasena',
+            {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: resetToken, newPassword: p1 })
+          });
+          const data = await res.json().catch(function () { return {}; });
+          if (res.ok && data.ok) {
+            show(msgNueva, data.mensaje || 'Listo. Redirigiendo al login…', true);
+            setTimeout(function () {
+              window.location.href = 'login.html';
+            }, 2000);
+            return;
+          }
+          show(msgNueva, data.error || 'No se pudo guardar.', false);
+        } catch (err) {
+          show(msgNueva, 'Error de red.', false);
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

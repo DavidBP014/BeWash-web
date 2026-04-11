@@ -79,7 +79,9 @@ if (contactForm) {
             const prev = btn.textContent;
             btn.textContent = 'Enviando...';
             try {
-                const res = await fetch('/api/contacto', {
+                const res = await fetch(
+                    typeof window.bewashApiUrl === 'function' ? window.bewashApiUrl('/api/contacto') : '/api/contacto',
+                    {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)

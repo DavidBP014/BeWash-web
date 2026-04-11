@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="bewash-api-origin" content="">
+  <title>Panel admin — BeWash</title>
+  <link rel="icon" type="image/png" href="../img/8d83c64278d14db996379e6a57c34ba107aacdc5 (1).png">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="admin-page">
+    <div class="admin-header-bar">
+      <a href="../index.html" class="logo-mini">
+        <img src="../img/8d83c64278d14db996379e6a57c34ba107aacdc5 (1).png" alt="BeWash">
+        <span><strong>Be</strong><span style="color:var(--primary-color)">Wash</span></span>
+      </a>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <span id="adminEmail" style="font-size:0.85rem;color:var(--text-light);max-width:200px;overflow:hidden;text-overflow:ellipsis;"></span>
+        <button type="button" class="admin-logout" id="btnLogout">Cerrar sesión</button>
+      </div>
+    </div>
+    <div class="admin-card admin-panel-wide">
+      <h2>Enviar notificación al cliente</h2>
+      <p class="admin-sub">Se enviará un correo con el diseño institucional de BeWash al correo que indiques.</p>
+      <div id="msg" class="admin-msg" role="alert"></div>
+      <form id="formEnvio">
+        <div class="form-group">
+          <label for="emailCliente">Correo electrónico del cliente</label>
+          <input type="email" id="emailCliente" name="emailCliente" required placeholder="cliente@ejemplo.com" autocomplete="off">
+        </div>
+        <div class="admin-actions">
+          <button type="submit" class="admin-btn admin-btn-primary" id="btnEnviar">Enviar correo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script src="../js/bewash-api.js"></script>
+  <script>
+    (function () {
+      const token = sessionStorage.getItem('bewash_admin_token');
+      if (!token) {
+        window.location.replace('login.html');
+        return;
+      }
+
+      const msg = document.getElementById('msg');
+      const btnEnviar = document.getElementById('btnEnviar');
+      const form = document.getElementById('formEnvio');
+
+      function showMsg(text, ok) {
+        msg.textContent = text || '';
+        msg.className = 'admin-msg ' + (ok ? 'ok' : 'error');
+        msg.style.display = text ? 'block' : 'none';
+      }
+
+      fetch(
+        typeof window.bewashApiUrl === 'function' ? window.bewashApiUrl('/api/admin/me') : '/api/admin/me',
+        { headers: { Authorization: 'Bearer ' + token } }
+      )
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data && data.ok && data.email) {
+            document.getElementById('adminEmail').textContent = data.email;
+          }
+        })
+        .catch(function () {});
+
+      document.getElementById('btnLogout').addEventListener('click', function () {
+        sessionStorage.removeItem('bewash_admin_token');
+        window.location.href = 'login.html';
+      });
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        showMsg('');
+        btnEnviar.disabled = true;
+        try {
+          const res = await fetch(
+            typeof window.bewashApiUrl === 'function'
+              ? window.bewashApiUrl('/api/admin/enviar-notificacion-cliente')
+              : '/api/admin/enviar-notificacion-cliente',
+            {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + token
+            },
+            body: JSON.stringify({
+              emailCliente: document.getElementById('emailCliente').value.trim()
+            })
+          });
+          const data = await res.json().catch(function () { return {}; });
+          if (res.status === 401) {
+            sessionStorage.removeItem('bewash_admin_token');
+            window.location.href = 'login.html';
+            return;
+          }
+          if (res.ok && data.ok) {
+            showMsg(data.mensaje || 'Enviado.', true);
+            document.getElementById('emailCliente').value = '';
+            return;
+          }
+          showMsg(data.error || 'Error al enviar.', false);
+        } catch (err) {
+          showMsg('Error de red o el servidor no responde.', false);
+        } finally {
+          btnEnviar.disabled = false;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

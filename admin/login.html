@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Misma URL que en index.html: vacío = API en el mismo dominio. Si el HTML está en bewash.net y la API en Vercel, pon la URL base aquí. -->
+  <meta name="bewash-api-origin" content="">
+  <title>Admin — BeWash</title>
+  <link rel="icon" type="image/png" href="../img/8d83c64278d14db996379e6a57c34ba107aacdc5 (1).png">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="admin-page">
+    <div class="admin-header-bar">
+      <a href="../index.html" class="logo-mini">
+        <img src="../img/8d83c64278d14db996379e6a57c34ba107aacdc5 (1).png" alt="BeWash">
+        <span><strong>Be</strong><span style="color:var(--primary-color)">Wash</span> · Admin</span>
+      </a>
+    </div>
+    <div class="admin-card">
+      <h2>Iniciar sesión</h2>
+      <p class="admin-sub">Solo personal autorizado</p>
+      <div id="msg" class="admin-msg" role="alert"></div>
+      <form id="formLogin">
+        <div class="form-group">
+          <label for="email">Correo electrónico</label>
+          <input type="email" id="email" name="email" autocomplete="username" required placeholder="tu@correo.com">
+        </div>
+        <div class="form-group">
+          <label for="password">Contraseña</label>
+          <input type="password" id="password" name="password" autocomplete="current-password" required placeholder="Contraseña">
+        </div>
+        <div class="admin-actions">
+          <button type="submit" class="admin-btn admin-btn-primary" id="btnLogin">Entrar</button>
+        </div>
+        <p class="admin-link" style="margin-top:1rem;">
+          <a href="recuperar.html">¿Olvidaste tu contraseña?</a>
+        </p>
+      </form>
+    </div>
+  </div>
+  <script src="../js/bewash-api.js"></script>
+  <script>
+    (function () {
+      const token = sessionStorage.getItem('bewash_admin_token');
+      if (token) {
+        window.location.replace('panel.html');
+        return;
+      }
+      const form = document.getElementById('formLogin');
+      const msg = document.getElementById('msg');
+      const btn = document.getElementById('btnLogin');
+
+      function showMsg(text, ok) {
+        msg.textContent = text || '';
+        msg.className = 'admin-msg ' + (ok ? 'ok' : 'error');
+        msg.style.display = text ? 'block' : 'none';
+      }
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        showMsg('');
+        btn.disabled = true;
+        try {
+          const res = await fetch(
+            typeof window.bewashApiUrl === 'function' ? window.bewashApiUrl('/api/admin/login') : '/api/admin/login',
+            {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: document.getElementById('email').value.trim(),
+              password: document.getElementById('password').value
+            })
+          });
+          const data = await res.json().catch(function () { return {}; });
+          if (res.ok && data.ok && data.token) {
+            sessionStorage.setItem('bewash_admin_token', data.token);
+            window.location.href = 'panel.html';
+            return;
+          }
+          showMsg(data.error || 'No se pudo iniciar sesión.', false);
+        } catch (err) {
+          showMsg('No hay conexión con el servidor. Abre esta página desde el mismo origen donde corre la API (por ejemplo npm start en la carpeta server).', false);
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

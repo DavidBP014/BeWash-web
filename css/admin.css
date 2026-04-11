@@ -1,0 +1,173 @@
+/* Panel admin BeWash — coherente con style.css */
+.admin-page {
+  min-height: 100vh;
+  background: linear-gradient(160deg, var(--gray-100) 0%, #e8f4f4 45%, var(--white) 100%);
+  padding: 6rem 1rem 3rem;
+}
+
+.admin-card {
+  max-width: 420px;
+  margin: 0 auto;
+  background: var(--white);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  padding: 2rem 1.75rem;
+}
+
+.admin-card h2 {
+  font-size: 1.5rem;
+  color: var(--dark-color);
+  margin-bottom: 0.35rem;
+  text-align: center;
+}
+
+.admin-card .admin-sub {
+  text-align: center;
+  color: var(--text-light);
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-card .form-group {
+  margin-bottom: 1rem;
+}
+
+.admin-card label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-weight: 600;
+  color: var(--dark-color);
+  font-size: 0.9rem;
+}
+
+.admin-card input[type="email"],
+.admin-card input[type="password"] {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--gray-200);
+  border-radius: 10px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  transition: var(--transition);
+}
+
+.admin-card input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.admin-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.admin-btn {
+  display: inline-block;
+  width: 100%;
+  text-align: center;
+  padding: 0.85rem 1rem;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.admin-btn-primary {
+  background: var(--primary-color);
+  color: var(--white);
+}
+
+.admin-btn-primary:hover:not(:disabled) {
+  background: var(--primary-dark);
+}
+
+.admin-btn-primary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.admin-link {
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.admin-link a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.admin-link a:hover {
+  text-decoration: underline;
+}
+
+.admin-msg {
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  display: none;
+}
+
+.admin-msg.error {
+  display: block;
+  background: #fdecea;
+  color: #a32011;
+  border: 1px solid #f5c6c2;
+}
+
+.admin-msg.ok {
+  display: block;
+  background: #e8f6f3;
+  color: #0d6b6b;
+  border: 1px solid #b8e0dc;
+}
+
+.admin-header-bar {
+  max-width: 560px;
+  margin: 0 auto 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.admin-header-bar .logo-mini {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.admin-header-bar .logo-mini img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+
+.admin-logout {
+  background: transparent;
+  border: 2px solid var(--gray-200);
+  color: var(--text-color);
+  padding: 0.45rem 1rem;
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.admin-logout:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.admin-panel-wide {
+  max-width: 520px;
+}

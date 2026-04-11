@@ -7,6 +7,8 @@ const express = require('express');
 const fs = require('fs');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
+const adminAuth = require('./adminAuth');
+const { htmlNotificacionBeWashCliente, textoPlanoNotificacion } = require('./emailNotificacionCliente');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -20,9 +22,6 @@ const REGISTROS_FILE = path.join(DATA_DIR, 'registros.json');
 app.use(express.json({ limit: '32kb' }));
 app.use(cors({ origin: true })); // En producción restringe a tu dominio
 
-// Servir la página web desde la carpeta anterior (dtf)
-app.use(express.static(path.join(__dirname, '..')));
-
 // Asegurar carpeta de datos
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -30,6 +29,8 @@ if (!fs.existsSync(DATA_DIR)) {
 if (!fs.existsSync(REGISTROS_FILE)) {
   fs.writeFileSync(REGISTROS_FILE, '[]', 'utf8');
 }
+
+adminAuth.bootstrapUsersIfNeeded(DATA_DIR);
 
 function leerRegistros() {
   const data = fs.readFileSync(REGISTROS_FILE, 'utf8');
@@ -87,8 +88,10 @@ const EMAIL_CORPORATIVO = String(process.env.EMAIL_TO || 'bewashsas1@gmail.com')
   .toLowerCase();
 
 function credencialesMailOk() {
-  const user = process.env.GMAIL_USER;
-  const pass = process.env.GMAIL_APP_PASSWORD;
+  const user = String(process.env.GMAIL_USER || '').trim();
+  const pass = String(process.env.GMAIL_APP_PASSWORD || '')
+    .trim()
+    .replace(/\s+/g, '');
   return { user, pass, ok: Boolean(user && pass) };
 }
 
@@ -97,6 +100,50 @@ function credencialesMailOk() {
  * @param {{ subject: string, text: string, replyTo?: string }} opts
  * @returns {Promise<boolean>}
  */
+function urlBasePublica(req) {
+  const fromEnv = String(process.env.PUBLIC_SITE_URL || '').trim().replace(/\/$/, '');
+  if (fromEnv) return fromEnv;
+  const host = req.get('x-forwarded-host') || req.get('host');
+  const proto = req.get('x-forwarded-proto') || (process.env.VERCEL ? 'https' : 'http');
+  if (host) return `${proto}://${host}`.replace(/\/$/, '');
+  return `http://localhost:${PORT}`;
+}
+
+/**
+ * @returns {Promise<{ ok: true } | { ok: false, error: string }>}
+ */
+async function enviarCorreoHtml(opts) {
+  const { user, pass, ok } = credencialesMailOk();
+  if (!ok) {
+    console.warn('[EMAIL] Falta GMAIL_USER o GMAIL_APP_PASSWORD — no se envía HTML a', opts.to);
+    return { ok: false, error: 'Falta GMAIL_USER o GMAIL_APP_PASSWORD en el servidor.' };
+  }
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: { user, pass }
+  });
+  try {
+    await transporter.sendMail({
+      from: user,
+      to: opts.to,
+      subject: opts.subject,
+      text: opts.text || 'BeWash — abre este mensaje en un cliente que permita HTML.',
+      html: opts.html
+    });
+    console.log('[EMAIL] HTML enviado a', opts.to, '-', opts.subject);
+    return { ok: true };
+  } catch (err) {
+    const msg = err && err.message ? String(err.message) : 'Error desconocido';
+    console.error('[EMAIL] Error al enviar HTML:', msg);
+    let hint = msg;
+    if (/Invalid login|535|EAUTH|authentication failed/i.test(msg)) {
+      hint =
+        'Gmail rechazó el inicio de sesión. Revisa GMAIL_USER y GMAIL_APP_PASSWORD (contraseña de aplicación de Google, sin espacios).';
+    }
+    return { ok: false, error: hint };
+  }
+}
+
 async function enviarCorreoCorporativo(opts) {
   const { user, pass, ok } = credencialesMailOk();
   if (!ok) {
@@ -258,6 +305,209 @@ app.get('/api/admin/registros', (req, res) => {
   }
   res.json(leerRegistros());
 });
+
+function adminJwtMiddleware(req, res, next) {
+  try {
+    adminAuth.assertJwtSecret();
+  } catch (e) {
+    if (e && e.code === 'NO_JWT') {
+      return res.status(503).json({
+        ok: false,
+        error:
+          'El panel admin requiere JWT_SECRET en variables de entorno (cadena segura de al menos 16 caracteres).'
+      });
+    }
+    console.error(e);
+    return res.status(500).json({ ok: false, error: 'Error de configuración del servidor.' });
+  }
+  const email = adminAuth.verificarTokenSesion(req.get('authorization'));
+  if (!email) {
+    return res.status(401).json({ ok: false, error: 'Sesión no válida o expirada. Inicia sesión de nuevo.' });
+  }
+  req.adminEmail = email;
+  next();
+}
+
+// POST /api/admin/login
+app.post('/api/admin/login', async (req, res) => {
+  try {
+    adminAuth.assertJwtSecret();
+  } catch (e) {
+    if (e && e.code === 'NO_JWT') {
+      return res.status(503).json({
+        ok: false,
+        error:
+          'Configura JWT_SECRET en el servidor (Vercel → Environment Variables) con al menos 16 caracteres aleatorios.'
+      });
+    }
+    console.error(e);
+    return res.status(500).json({ ok: false, error: 'Error de configuración del servidor.' });
+  }
+  try {
+    const { email, password } = req.body || {};
+    const v = await adminAuth.verificarLogin(DATA_DIR, email, password);
+    if (!v.ok) {
+      return res.status(401).json({ ok: false, error: v.error });
+    }
+    const token = adminAuth.emitirTokenSesion(v.email);
+    res.json({ ok: true, token, email: v.email });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ ok: false, error: 'Error al iniciar sesión.' });
+  }
+});
+
+// GET /api/admin/me
+app.get('/api/admin/me', (req, res) => {
+  try {
+    adminAuth.assertJwtSecret();
+  } catch (e) {
+    if (e && e.code === 'NO_JWT') {
+      return res.status(503).json({ ok: false, error: 'Falta JWT_SECRET en el servidor.' });
+    }
+    console.error(e);
+    return res.status(500).json({ ok: false, error: 'Error de configuración del servidor.' });
+  }
+  const email = adminAuth.verificarTokenSesion(req.get('authorization'));
+  if (!email) {
+    return res.status(401).json({ ok: false, error: 'No autenticado.' });
+  }
+  res.json({ ok: true, email });
+});
+
+// POST /api/admin/solicitar-recuperacion — envía enlace al correo del admin
+app.post('/api/admin/solicitar-recuperacion', async (req, res) => {
+  try {
+    try {
+      adminAuth.assertJwtSecret();
+    } catch (e) {
+      if (e && e.code === 'NO_JWT') {
+        return res.status(503).json({ ok: false, error: 'Falta JWT_SECRET en el servidor.' });
+      }
+      console.error(e);
+      return res.status(500).json({ ok: false, error: 'Error de configuración del servidor (JWT).' });
+    }
+
+    const { email } = req.body || {};
+    const e = String(email || '').trim().toLowerCase();
+    if (!REGEX_EMAIL_SIMPLE.test(e)) {
+      return res.status(400).json({ ok: false, error: 'Correo no válido.' });
+    }
+    if (!adminAuth.esAdminAutorizado(e)) {
+      return res.json({
+        ok: true,
+        mensaje: 'Si el correo está registrado como administrador, recibirás instrucciones en breve.'
+      });
+    }
+    const { ok } = credencialesMailOk();
+    if (!ok) {
+      return res.status(503).json({
+        ok: false,
+        error: 'No se puede enviar el correo: configura GMAIL_USER y GMAIL_APP_PASSWORD en Vercel o en server/.env.'
+      });
+    }
+    const token = adminAuth.emitirTokenReset(e);
+    const base = urlBasePublica(req);
+    const link = `${base}/admin/recuperar.html?token=${encodeURIComponent(token)}`;
+    const mailResult = await enviarCorreoHtml({
+      to: e,
+      subject: 'BeWash — Restablecer contraseña del panel admin',
+      text: `Hola,\n\nPara crear una nueva contraseña del panel administrativo de BeWash, abre este enlace (válido 1 hora):\n\n${link}\n\nSi no solicitaste este cambio, ignora este mensaje.\n`,
+      html: `<p>Hola,</p><p>Para <strong>restablecer tu contraseña</strong> del panel administrativo de BeWash, pulsa el botón (válido 1 hora):</p><p><a href="${link}" style="display:inline-block;background:#118282;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;">Restablecer contraseña</a></p><p>O copia este enlace:<br><span style="word-break:break-all;">${escapeHtmlEmail(
+        link
+      )}</span></p><p style="color:#666;font-size:13px;">Si no solicitaste este cambio, ignora este mensaje.</p>`
+    });
+    if (!mailResult.ok) {
+      return res.status(503).json({
+        ok: false,
+        error: mailResult.error || 'No se pudo enviar el correo. Revisa la configuración SMTP.'
+      });
+    }
+    res.json({
+      ok: true,
+      mensaje: 'Revisa tu bandeja de entrada (y spam) para continuar con el restablecimiento.'
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ ok: false, error: 'Error al procesar la solicitud.' });
+  }
+});
+
+function escapeHtmlEmail(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/"/g, '&quot;');
+}
+
+// POST /api/admin/restablecer-contrasena
+app.post('/api/admin/restablecer-contrasena', (req, res) => {
+  try {
+    adminAuth.assertJwtSecret();
+  } catch (e) {
+    if (e && e.code === 'NO_JWT') {
+      return res.status(503).json({ ok: false, error: 'Falta JWT_SECRET en el servidor.' });
+    }
+    console.error(e);
+    return res.status(500).json({ ok: false, error: 'Error de configuración del servidor.' });
+  }
+  try {
+    const { token, newPassword } = req.body || {};
+    const email = adminAuth.verificarTokenReset(token);
+    if (!email) {
+      return res.status(400).json({ ok: false, error: 'Enlace inválido o expirado. Solicita un nuevo correo de recuperación.' });
+    }
+    const pwd = String(newPassword || '');
+    if (pwd.length < 8) {
+      return res.status(400).json({ ok: false, error: 'La contraseña debe tener al menos 8 caracteres.' });
+    }
+    adminAuth.guardarNuevoPassword(DATA_DIR, email, pwd);
+    res.json({ ok: true, mensaje: 'Contraseña actualizada. Ya puedes iniciar sesión.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ ok: false, error: 'Error al guardar la contraseña.' });
+  }
+});
+
+// POST /api/admin/enviar-notificacion-cliente — correo al cliente (diseño HTML)
+app.post('/api/admin/enviar-notificacion-cliente', adminJwtMiddleware, async (req, res) => {
+  try {
+    const { emailCliente } = req.body || {};
+    const dest = String(emailCliente || '').trim().toLowerCase();
+    if (!REGEX_EMAIL_SIMPLE.test(dest)) {
+      return res.status(400).json({ ok: false, error: 'Correo del cliente no válido.' });
+    }
+    const dominio = dest.split('@')[1] || '';
+    const esDesechable = DOMINIOS_DESECHABLES.some(d => dominio.includes(d));
+    if (esDesechable) {
+      return res.status(400).json({ ok: false, error: 'No se permiten correos temporales o desechables.' });
+    }
+    const base = urlBasePublica(req);
+    const html = htmlNotificacionBeWashCliente({ baseUrl: base, emailCliente: dest });
+    const text = textoPlanoNotificacion(dest, base);
+    const mailResult = await enviarCorreoHtml({
+      to: dest,
+      subject: 'BeWash — Información sobre nuestro servicio',
+      text,
+      html
+    });
+    if (!mailResult.ok) {
+      return res.status(503).json({
+        ok: false,
+        error:
+          mailResult.error ||
+          'No se pudo enviar: configura GMAIL_USER y GMAIL_APP_PASSWORD en el servidor (contraseña de aplicación de Google).'
+      });
+    }
+    res.json({ ok: true, mensaje: `Notificación enviada a ${dest}.` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ ok: false, error: 'Error al enviar el correo.' });
+  }
+});
+
+// Archivos estáticos al final: no interceptan rutas /api (y evita respuestas HTML inesperadas en algunos despliegues)
+app.use(express.static(path.join(__dirname, '..')));
 
 if (require.main === module) {
   app.listen(PORT, () => {
