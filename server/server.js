@@ -394,10 +394,7 @@ app.post('/api/admin/solicitar-recuperacion', async (req, res) => {
       return res.status(400).json({ ok: false, error: 'Correo no válido.' });
     }
     if (!adminAuth.esAdminAutorizado(e)) {
-      return res.json({
-        ok: true,
-        mensaje: 'Si el correo está registrado como administrador, recibirás instrucciones en breve.'
-      });
+      return res.status(403).json({ ok: false, error: 'Correo no autorizado.' });
     }
     const { ok } = credencialesMailOk();
     if (!ok) {
