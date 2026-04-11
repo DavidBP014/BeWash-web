@@ -3,6 +3,7 @@
   "private": true,
   "description": "Sitio BeWash + API (Vercel serverless)",
   "dependencies": {
+    "@vercel/blob": "^2.3.3",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",

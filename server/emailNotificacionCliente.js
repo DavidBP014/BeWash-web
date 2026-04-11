@@ -40,10 +40,12 @@ function mesNombre(d) {
   return MESES_ES[d.getMonth()];
 }
 
+const DEFAULT_BEPARKING_REGISTER = 'https://www.beparking.com.co/Register';
+
 function beParkingUrl(baseUrl) {
   const u = String(process.env.BE_PARKING_URL || '').trim();
   if (u) return u.replace(/\/$/, '');
-  return `${String(baseUrl || '').replace(/\/$/, '')}/index.html#contacto`;
+  return DEFAULT_BEPARKING_REGISTER;
 }
 
 /**

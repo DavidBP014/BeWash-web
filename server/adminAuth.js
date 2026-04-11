@@ -1,9 +1,8 @@
 'use strict';
 
-const fs = require('fs');
-const path = require('path');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const storage = require('./adminAuthStorage');
 
 const ALLOWED_ADMIN_EMAILS = new Set([
   'bewashsas1@gmail.com',
@@ -11,28 +10,6 @@ const ALLOWED_ADMIN_EMAILS = new Set([
 ]);
 
 const BCRYPT_ROUNDS = 10;
-
-function adminAuthFilePath(dataDir) {
-  return path.join(dataDir, 'admin_auth.json');
-}
-
-function leerAdminAuth(filePath) {
-  if (!fs.existsSync(filePath)) {
-    return { users: {} };
-  }
-  try {
-    const raw = fs.readFileSync(filePath, 'utf8');
-    const data = JSON.parse(raw);
-    if (!data.users || typeof data.users !== 'object') return { users: {} };
-    return data;
-  } catch {
-    return { users: {} };
-  }
-}
-
-function guardarAdminAuth(filePath, data) {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
-}
 
 function jwtSecret() {
   return String(process.env.JWT_SECRET || '').trim();
@@ -56,9 +33,8 @@ function esAdminAutorizado(email) {
 /**
  * Si un usuario autorizado aún no tiene hash, lo crea desde variables de entorno de arranque.
  */
-function bootstrapUsersIfNeeded(dataDir) {
-  const filePath = adminAuthFilePath(dataDir);
-  const auth = leerAdminAuth(filePath);
+async function bootstrapUsersIfNeeded(dataDir) {
+  const auth = await storage.readAuth(dataDir);
   let changed = false;
 
   const bootstrapFor = (email, envKey) => {
@@ -88,38 +64,46 @@ function bootstrapUsersIfNeeded(dataDir) {
     }
   }
 
-  if (changed) guardarAdminAuth(filePath, auth);
+  if (changed) await storage.writeAuth(dataDir, auth);
   return auth;
 }
 
-function obtenerHash(dataDir, email) {
+async function obtenerHash(dataDir, email) {
   const e = String(email || '').trim().toLowerCase();
-  const auth = leerAdminAuth(adminAuthFilePath(dataDir));
+  const auth = await storage.readAuth(dataDir);
   return auth.users[e]?.passwordHash || null;
 }
 
-function guardarNuevoPassword(dataDir, email, plainPassword) {
+async function guardarNuevoPassword(dataDir, email, plainPassword) {
   const e = String(email || '').trim().toLowerCase();
-  const filePath = adminAuthFilePath(dataDir);
-  const auth = leerAdminAuth(filePath);
+  const auth = await storage.readAuth(dataDir);
   auth.users[e] = {
     passwordHash: bcrypt.hashSync(plainPassword, BCRYPT_ROUNDS),
     updatedAt: new Date().toISOString()
   };
-  guardarAdminAuth(filePath, auth);
+  await storage.writeAuth(dataDir, auth);
+}
+
+function mensajeSinHash() {
+  if (process.env.VERCEL && !storage.useBlob()) {
+    return (
+      'No hay contraseña guardada de forma persistente. En Vercel: Storage → Blob → conecta el store al proyecto (variable BLOB_READ_WRITE_TOKEN), ' +
+      'o define ADMIN_INITIAL_PASSWORD / ADMIN_BOOTSTRAP_* y vuelve a iniciar sesión. ' +
+      'Sin Blob, /tmp se borra y se pierde la contraseña tras un reinicio del servidor.'
+    );
+  }
+  return (
+    'Cuenta sin contraseña inicial. En el servidor define ADMIN_INITIAL_PASSWORD o ADMIN_BOOTSTRAP_* en las variables de entorno y reinicia.'
+  );
 }
 
 async function verificarLogin(dataDir, email, password) {
   const e = String(email || '').trim().toLowerCase();
   if (!esAdminAutorizado(e)) return { ok: false, error: 'Credenciales incorrectas.' };
-  bootstrapUsersIfNeeded(dataDir);
-  const hash = obtenerHash(dataDir, e);
+  await bootstrapUsersIfNeeded(dataDir);
+  const hash = await obtenerHash(dataDir, e);
   if (!hash) {
-    return {
-      ok: false,
-      error:
-        'Cuenta sin contraseña inicial. En el servidor define ADMIN_INITIAL_PASSWORD o ADMIN_BOOTSTRAP_* en las variables de entorno y reinicia.'
-    };
+    return { ok: false, error: mensajeSinHash() };
   }
   const match = await bcrypt.compare(String(password || ''), hash);
   if (!match) return { ok: false, error: 'Credenciales incorrectas.' };
@@ -128,8 +112,8 @@ async function verificarLogin(dataDir, email, password) {
 
 function emitirTokenSesion(email) {
   const secret = assertJwtSecret();
-  const e = String(email || '').trim().toLowerCase();
-  return jwt.sign({ sub: e, typ: 'admin' }, secret, { expiresIn: '7d' });
+  const em = String(email || '').trim().toLowerCase();
+  return jwt.sign({ sub: em, typ: 'admin' }, secret, { expiresIn: '7d' });
 }
 
 function verificarTokenSesion(authHeader) {
@@ -139,9 +123,9 @@ function verificarTokenSesion(authHeader) {
     if (!raw) return null;
     const decoded = jwt.verify(raw, secret);
     if (decoded.typ !== 'admin' || !decoded.sub) return null;
-    const email = String(decoded.sub).toLowerCase();
-    if (!esAdminAutorizado(email)) return null;
-    return email;
+    const em = String(decoded.sub).toLowerCase();
+    if (!esAdminAutorizado(em)) return null;
+    return em;
   } catch {
     return null;
   }
@@ -149,8 +133,8 @@ function verificarTokenSesion(authHeader) {
 
 function emitirTokenReset(email) {
   const secret = assertJwtSecret();
-  const e = String(email || '').trim().toLowerCase();
-  return jwt.sign({ sub: e, typ: 'pwd-reset' }, secret, { expiresIn: '1h' });
+  const em = String(email || '').trim().toLowerCase();
+  return jwt.sign({ sub: em, typ: 'pwd-reset' }, secret, { expiresIn: '1h' });
 }
 
 function verificarTokenReset(token) {
@@ -158,9 +142,9 @@ function verificarTokenReset(token) {
     const secret = assertJwtSecret();
     const decoded = jwt.verify(String(token || ''), secret);
     if (decoded.typ !== 'pwd-reset' || !decoded.sub) return null;
-    const email = String(decoded.sub).toLowerCase();
-    if (!esAdminAutorizado(email)) return null;
-    return email;
+    const em = String(decoded.sub).toLowerCase();
+    if (!esAdminAutorizado(em)) return null;
+    return em;
   } catch {
     return null;
   }
@@ -168,7 +152,8 @@ function verificarTokenReset(token) {
 
 module.exports = {
   ALLOWED_ADMIN_EMAILS,
-  adminAuthFilePath,
+  adminAuthFilePath: storage.adminAuthFilePath,
+  useBlobStorage: storage.useBlob,
   bootstrapUsersIfNeeded,
   esAdminAutorizado,
   verificarLogin,

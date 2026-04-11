@@ -30,8 +30,6 @@ if (!fs.existsSync(REGISTROS_FILE)) {
   fs.writeFileSync(REGISTROS_FILE, '[]', 'utf8');
 }
 
-adminAuth.bootstrapUsersIfNeeded(DATA_DIR);
-
 function leerRegistros() {
   const data = fs.readFileSync(REGISTROS_FILE, 'utf8');
   try {
@@ -438,7 +436,7 @@ function escapeHtmlEmail(s) {
 }
 
 // POST /api/admin/restablecer-contrasena
-app.post('/api/admin/restablecer-contrasena', (req, res) => {
+app.post('/api/admin/restablecer-contrasena', async (req, res) => {
   try {
     adminAuth.assertJwtSecret();
   } catch (e) {
@@ -458,7 +456,7 @@ app.post('/api/admin/restablecer-contrasena', (req, res) => {
     if (pwd.length < 8) {
       return res.status(400).json({ ok: false, error: 'La contraseña debe tener al menos 8 caracteres.' });
     }
-    adminAuth.guardarNuevoPassword(DATA_DIR, email, pwd);
+    await adminAuth.guardarNuevoPassword(DATA_DIR, email, pwd);
     res.json({ ok: true, mensaje: 'Contraseña actualizada. Ya puedes iniciar sesión.' });
   } catch (err) {
     console.error(err);
